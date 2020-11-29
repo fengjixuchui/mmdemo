@@ -15,6 +15,11 @@ struct PageFreer {
   void operator()(void* p) { VirtualFree(p, 0, MEM_RELEASE); }
 };
 
+struct ModFreer {
+  typedef HMODULE pointer;
+  void operator()(HMODULE mod) { FreeLibrary(mod); }
+};
+
 class ChildProcess final {
   PROCESS_INFORMATION pi_;
 

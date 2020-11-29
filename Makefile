@@ -14,6 +14,7 @@ RM=del/q
 LINKER=link
 TARGET=g.exe
 TARGET1=t.exe
+TARGET2=u.exe
 
 OBJS=\
 	$(OBJDIR)\common.obj\
@@ -23,6 +24,10 @@ OBJS1=\
 	$(OBJDIR)\common.obj\
 	$(OBJDIR)\main1.obj\
 	$(OBJDIR)\largepage.obj\
+
+OBJS2=\
+	$(OBJDIR)\common.obj\
+	$(OBJDIR)\main2.obj\
 
 LIBS=\
 	advapi32.lib\
@@ -51,13 +56,17 @@ LFLAGS_CUI=\
 	/DEBUG\
 	/SUBSYSTEM:CONSOLE\
 
-all: $(OUTDIR)\$(TARGET) $(OUTDIR)\$(TARGET1)
+all: $(OUTDIR)\$(TARGET) $(OUTDIR)\$(TARGET1) $(OUTDIR)\$(TARGET2)
 
 $(OUTDIR)\$(TARGET): $(OBJS)
 	@if not exist $(OUTDIR) mkdir $(OUTDIR)
 	$(LINKER) $(LFLAGS) $(LIBS) /PDB:"$(@R).pdb" /OUT:$@ $**
 
 $(OUTDIR)\$(TARGET1): $(OBJS1)
+	@if not exist $(OUTDIR) mkdir $(OUTDIR)
+	$(LINKER) $(LFLAGS_CUI) $(LIBS) /PDB:"$(@R).pdb" /OUT:$@ $**
+
+$(OUTDIR)\$(TARGET2): $(OBJS2)
 	@if not exist $(OUTDIR) mkdir $(OUTDIR)
 	$(LINKER) $(LFLAGS_CUI) $(LIBS) /PDB:"$(@R).pdb" /OUT:$@ $**
 
@@ -73,3 +82,6 @@ clean:
 	@if exist $(OUTDIR)\$(TARGET1) $(RM) $(OUTDIR)\$(TARGET1)
 	@if exist $(OUTDIR)\$(TARGET1:exe=ilk) $(RM) $(OUTDIR)\$(TARGET1:exe=ilk)
 	@if exist $(OUTDIR)\$(TARGET1:exe=pdb) $(RM) $(OUTDIR)\$(TARGET1:exe=pdb)
+	@if exist $(OUTDIR)\$(TARGET2) $(RM) $(OUTDIR)\$(TARGET2)
+	@if exist $(OUTDIR)\$(TARGET2:exe=ilk) $(RM) $(OUTDIR)\$(TARGET2:exe=ilk)
+	@if exist $(OUTDIR)\$(TARGET2:exe=pdb) $(RM) $(OUTDIR)\$(TARGET2:exe=pdb)

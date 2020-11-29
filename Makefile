@@ -13,12 +13,19 @@ RD=rd/s/q
 RM=del/q
 LINKER=link
 TARGET=g.exe
+TARGET1=t.exe
 
 OBJS=\
 	$(OBJDIR)\common.obj\
 	$(OBJDIR)\guimain.obj\
 
+OBJS1=\
+	$(OBJDIR)\common.obj\
+	$(OBJDIR)\main1.obj\
+	$(OBJDIR)\largepage.obj\
+
 LIBS=\
+	advapi32.lib\
 	user32.lib\
 
 CFLAGS=\
@@ -39,11 +46,20 @@ LFLAGS=\
 	/DEBUG\
 	/SUBSYSTEM:WINDOWS\
 
-all: $(OUTDIR)\$(TARGET)
+LFLAGS_CUI=\
+	/NOLOGO\
+	/DEBUG\
+	/SUBSYSTEM:CONSOLE\
+
+all: $(OUTDIR)\$(TARGET) $(OUTDIR)\$(TARGET1)
 
 $(OUTDIR)\$(TARGET): $(OBJS)
 	@if not exist $(OUTDIR) mkdir $(OUTDIR)
 	$(LINKER) $(LFLAGS) $(LIBS) /PDB:"$(@R).pdb" /OUT:$@ $**
+
+$(OUTDIR)\$(TARGET1): $(OBJS1)
+	@if not exist $(OUTDIR) mkdir $(OUTDIR)
+	$(LINKER) $(LFLAGS_CUI) $(LIBS) /PDB:"$(@R).pdb" /OUT:$@ $**
 
 {$(SRCDIR)}.cpp{$(OBJDIR)}.obj:
 	@if not exist $(OBJDIR) mkdir $(OBJDIR)
@@ -54,3 +70,6 @@ clean:
 	@if exist $(OUTDIR)\$(TARGET) $(RM) $(OUTDIR)\$(TARGET)
 	@if exist $(OUTDIR)\$(TARGET:exe=ilk) $(RM) $(OUTDIR)\$(TARGET:exe=ilk)
 	@if exist $(OUTDIR)\$(TARGET:exe=pdb) $(RM) $(OUTDIR)\$(TARGET:exe=pdb)
+	@if exist $(OUTDIR)\$(TARGET1) $(RM) $(OUTDIR)\$(TARGET1)
+	@if exist $(OUTDIR)\$(TARGET1:exe=ilk) $(RM) $(OUTDIR)\$(TARGET1:exe=ilk)
+	@if exist $(OUTDIR)\$(TARGET1:exe=pdb) $(RM) $(OUTDIR)\$(TARGET1:exe=pdb)

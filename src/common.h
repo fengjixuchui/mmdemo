@@ -10,6 +10,11 @@ struct HandleCloser {
   void operator()(HANDLE h) { CloseHandle(h); }
 };
 
+struct PageFreer {
+  typedef void* pointer;
+  void operator()(void* p) { VirtualFree(p, 0, MEM_RELEASE); }
+};
+
 class ChildProcess final {
   PROCESS_INFORMATION pi_;
 

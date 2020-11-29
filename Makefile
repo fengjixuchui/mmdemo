@@ -15,6 +15,7 @@ LINKER=link
 TARGET=g.exe
 
 OBJS=\
+	$(OBJDIR)\common.obj\
 	$(OBJDIR)\guimain.obj\
 
 LIBS=\
@@ -31,7 +32,7 @@ CFLAGS=\
 	/D_UNICODE\
 	/D_CRT_SECURE_NO_WARNINGS\
 	/Fd"$(OBJDIR)\\"\
-	/Fo"$(OBJDIR)\\"
+	/Fo"$(OBJDIR)\\"\
 
 LFLAGS=\
 	/NOLOGO\

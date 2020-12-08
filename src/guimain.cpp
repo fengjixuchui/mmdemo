@@ -6,6 +6,7 @@
 #include "common.h"
 
 HANDLE gSharedSection = 0;
+void* gView = nullptr;
 
 void Log(LPCWSTR format, ...) {
   wchar_t linebuf[1024];
@@ -23,15 +24,14 @@ private:
     Forget,
   };
 
-  void* view_;
   HWND btnTouch_, btnForget_;
 
   bool InitWindow() {
-    view_ = MapViewOfFile(
+    gView = MapViewOfFile(
         gSharedSection,
         FILE_MAP_WRITE,
         0, 0, 0);
-    if (!view_) {
+    if (!gView) {
       Log(L"MapViewOfFile failed - %08x\n", GetLastError());
       return false;
     }
@@ -73,9 +73,10 @@ public:
       if (!InitWindow()) {
         return -1;
       }
+      ++(*reinterpret_cast<uint32_t*>(gView));
       break;
     case WM_DESTROY:
-      if (!UnmapViewOfFile(view_)) {
+      if (!UnmapViewOfFile(gView)) {
         Log(L"UnmapViewOfFile failed - %08x\n", GetLastError());
       }
       PostQuitMessage(0);
@@ -83,7 +84,7 @@ public:
     case WM_COMMAND:
       switch (static_cast<Control>(LOWORD(w))) {
         case Control::Touch:
-          Log(L"[%p] = %d\n", view_, ++(*reinterpret_cast<uint32_t*>(view_)));
+          Log(L"[%p] = %d\n", gView, ++(*reinterpret_cast<uint32_t*>(gView)));
           break;
         case Control::Forget:
           Log(L"SetProcessWorkingSetSize - %d\n",
@@ -166,6 +167,7 @@ class SharedSection {
   }
 
   operator HANDLE() const { return mSecionHandle; }
+  void* GetView() { return mMappedView; }
   void Touch() const {
     Log(L"[%p] = %d\n", mMappedView, *reinterpret_cast<uint32_t*>(mMappedView));
   }
@@ -221,15 +223,15 @@ int WINAPI wWinMain(HINSTANCE inst, HINSTANCE, PWSTR cmdLine, int show) {
   if (!child || !boat.AddProcess(child)) return 1;
 
   SharedSection section(0x1000);
-  gSharedSection = section.GetHandleFor(child);
+  HANDLE remoteHandle = section.GetHandleFor(child);
   if (!WriteProcessMemory(child,
                           &gSharedSection,
-                          &gSharedSection,
+                          &remoteHandle,
                           sizeof(gSharedSection),
                           nullptr)) {
     Log(L"WriteProcessMemory failed - %08x\n", GetLastError());
   }
-  gSharedSection = section;
+  gView = section.GetView();
 
   section.Touch();
   child.ResumeAndWait();
